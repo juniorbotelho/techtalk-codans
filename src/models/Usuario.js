@@ -5,8 +5,8 @@ export class Usuario {
   nome = "";
   profissao = "";
 
-  constructor({ nome, profissao }) {
-    this.id = uuidv4();
+  constructor({ id, nome, profissao }) {
+    this.id = id ?? uuidv4();
     this.nome = nome;
     this.profissao = profissao;
   }

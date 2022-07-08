@@ -3,13 +3,25 @@ import { Usuario } from './models/Usuario'
 
 export default function App() {
   const [usuarios, setUsuarios] = useState([]);
+  const [editMode, setEditMode] = useState({ id: "", toggle: false });
   const formRef = useRef(null);
 
   async function onSubmitForm(event) {
     event.preventDefault();
     const formulario = new FormData(event.target);
-    const dados = new Usuario(Object.fromEntries(formulario));
-    setUsuarios((usuarios) => [...usuarios, dados]);
+    if (editMode.toggle) {
+      const dados = new Usuario({
+        id: editMode.id,
+        ...Object.fromEntries(formulario),
+      });
+      const index = usuarios.findIndex(({ id }) => id === editMode.id);
+      const editados = usuarios.map((usuario, idx) => idx === index ? dados : usuario);
+      setUsuarios(editados);
+      setEditMode({ id: '', toggle: false });
+    } else {
+      const dados = new Usuario(Object.fromEntries(formulario));
+      setUsuarios((usuarios) => [...usuarios, dados]);
+    }
     event.currentTarget.reset();
   }
 
@@ -17,11 +29,10 @@ export default function App() {
     const { dataset } = event.currentTarget;
     const index = usuarios.findIndex(({ id }) => id === dataset.id);
     const [dados] = usuarios.filter((_, idx) => idx === index);
-    const [usuario, profissao, botao, checkbox] = formRef.current.querySelectorAll('input');
-    usuario.value = dados.nome;
+    setEditMode({ id: dados.id, toggle: true });
+    const [nome, profissao] = formRef.current.querySelectorAll('input');
+    nome.value = dados.nome;
     profissao.value = dados.profissao;
-    botao.value = 'Salvar Alteração';
-    checkbox.checked = true;
   }
 
   async function onRemoveItem(event) {
@@ -66,15 +77,14 @@ export default function App() {
 
         <form ref={formRef} onSubmit={onSubmitForm}>
           <div className="mb-3">
-            <label htmlFor="username" className="form-label">Nome</label>
-            <input type="text" className="form-control" id="username" name="nome" placeholder="Nome pessoal" />
+            <label htmlFor="nome" className="form-label">Nome</label>
+            <input type="text" className="form-control" id="nome" name="nome" placeholder="Nome pessoal" />
           </div>
           <div className="mb-3">
-            <label htmlFor="job" className="form-label">Profissão</label>
-            <input type="text" className="form-control" id="job" name="profissao" placeholder="Profissão" />
+            <label htmlFor="profissao" className="form-label">Profissão</label>
+            <input type="text" className="form-control" id="profissao" name="profissao" placeholder="Profissão" />
           </div>
           <input className="btn btn-primary" type="submit" value="Cadastrar"></input>
-          <input className="d-none" type="checkbox" name="isEditMode" disabled />
         </form>
       </div>
     </div>
